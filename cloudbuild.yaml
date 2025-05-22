@@ -17,7 +17,7 @@ steps:
       - 'deploy'
       - 'traccar-service'  # Dale un nombre a tu servicio en Cloud Run
       - '--image=gcr.io/$PROJECT_ID/mi-traccar:$SHORT_SHA'
-      - '--region=global' # Ej: us-central1, europe-west1. ¡Elige tu región!
+      - '--region=us-central1' # Ej: us-central1, europe-west1. ¡Elige tu región!
       - '--port=8082'  # <--- ¡IMPORTANTE! Indica a Cloud Run que la app escucha en el 8082
       - '--platform=managed'
       - '--allow-unauthenticated' # Para que sea accesible públicamente. Considera la seguridad.
