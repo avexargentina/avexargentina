@@ -24,6 +24,19 @@ steps:
       - '--allow-unauthenticated' # Para que sea accesible públicamente. Considera la seguridad.
       - '--quiet'
 
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'services'
+      - 'add-iam-policy-binding'
+      - 'traccar-service'
+      - '--member=allUsers'
+      - '--role=roles/run.invoker'
+      - '--region=us-central1'
+      - '--project=$PROJECT_ID'
+
 # Opcional: Especifica las imágenes que se subirán
 images:
   - 'gcr.io/$PROJECT_ID/mi-traccar:$SHORT_SHA'
