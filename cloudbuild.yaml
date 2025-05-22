@@ -19,6 +19,7 @@ steps:
       - '--image=gcr.io/$PROJECT_ID/mi-traccar:$SHORT_SHA'
       - '--region=us-central1' # Ej: us-central1, europe-west1. ¡Elige tu región!
       - '--port=8082'  # <--- ¡IMPORTANTE! Indica a Cloud Run que la app escucha en el 8082
+      - '--memory=1Gi'
       - '--platform=managed'
       - '--allow-unauthenticated' # Para que sea accesible públicamente. Considera la seguridad.
       - '--quiet'
