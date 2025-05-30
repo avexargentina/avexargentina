@@ -8,12 +8,18 @@
     <entry key='web.port'>8082</entry> <entry key='web.path'>./web</entry>
     <entry key='web.override'>./override</entry>
     <entry key='web.cacheControl'>max-age=3600,public</entry>
-    <entry key='web.healthCheck.enable'>false</entry> <entry key='geocoder.enable'>true</entry>
-    <entry key='geocoder.type'>locationiq</entry> <entry key='geocoder.key'>pk.689d849289c8c63708068b2ff1f63b2d</entry> <entry key='geocoder.ignorePositions'>true</entry>
+    <entry key='web.healthCheck.enable'>false</entry>
+    <entry key='geocoder.enable'>true</entry>
+    <entry key='geocoder.type'>locationiq</entry>
+    <entry key='geocoder.key'>pk.689d849289c8c63708068b2ff1f63b2d</entry> 
+    <entry key='geocoder.ignorePositions'>true</entry>
     <entry key='geocoder.reuseDistance'>100</entry>
 
     <entry key='logger.enable'>true</entry>
-    <entry key='logger.level'>info</entry> <entry key='logger.console'>true</entry> <entry key='logger.file'>./logs/tracker-server.log</entry> <entry key='logger.rotate'>true</entry>
+    <entry key='logger.level'>info</entry> 
+    <entry key='logger.console'>true</entry> 
+    <entry key='logger.file'>./logs/tracker-server.log</entry>
+    <entry key='logger.rotate'>true</entry>
 
     <entry key='event.enable'>true</entry>
     <entry key='event.motion.processInvalidPositions'>false</entry>
@@ -30,10 +36,15 @@
     <entry key='media.path'>./media</entry>
 
     <entry key='server.statistics'>https://www.traccar.org/analytics/</entry>
-    <entry key='server.maxRequestTime'>600000</entry> <entry key='server.buffering.threshold'>0</entry>
+    <entry key='server.maxRequestTime'>600000</entry>
+    <entry key='server.buffering.threshold'>0</entry>
     <entry key='server.forward'>false</entry>
     <entry key='server.forward.json'>true</entry>
-    <entry key='server.temperatureUnit'>C</entry> <entry key='server.speedUnit'>kmh</entry> <entry key='server.distanceUnit'>km</entry> <entry key='server.volumeUnit'>ltr</entry> <entry key='database.driver'>com.mysql.cj.jdbc.Driver</entry>
+    <entry key='server.temperatureUnit'>C</entry>
+    <entry key='server.speedUnit'>kmh</entry> 
+    <entry key='server.distanceUnit'>km</entry> 
+    <entry key='server.volumeUnit'>ltr</entry> 
+    <entry key='database.driver'>com.mysql.cj.jdbc.Driver</entry>
     <entry key='database.url'>jdbc:mysql://127.0.0.1:3306/traccar?serverTimezone=UTC&amp;useSSL=false&amp;allowPublicKeyRetrieval=true</entry>
     <entry key='database.user'>traccar_user</entry>
     <entry key='database.password'>${DB_PASSWORD}</entry>
@@ -56,9 +67,16 @@
     <entry key='status.timeout'>600</entry> <entry key='status.updateDeviceState'>false</entry>
 
     <entry key='osmand.port'>5055</entry>
-    <entry key='notificator.types'>web,mail</entry> <entry key='notificator.telegram.key'></entry> <entry key='notificator.telegram.chatId'></entry> <entry key='command.deviceReadonly'>false</entry> <entry key='filter.enable'>true</entry>
-    <entry key='filter.future'>86400</entry> <entry key='filter.skipLimit'>3600</entry> <entry key='filter.invalid'>true</entry>
+    <entry key='notificator.types'>web,mail</entry> 
+    <entry key='notificator.telegram.key'></entry>
+    <entry key='notificator.telegram.chatId'></entry>
+    <entry key='command.deviceReadonly'>false</entry>
+    <entry key='filter.enable'>true</entry>
+    <entry key='filter.future'>86400</entry> 
+    <entry key='filter.skipLimit'>3600</entry>
+    <entry key='filter.invalid'>true</entry>
     <entry key='filter.zero'>true</entry>
     <entry key='filter.duplicate'>true</entry>
 
-    <entry key='location.ipStack.key'></entry> </properties>
+    <entry key='location.ipStack.key'></entry>
+</properties>
