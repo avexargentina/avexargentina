@@ -7,17 +7,18 @@ RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
     curl \
+    systemd-sysv \
+    unzip \
     && rm -rf /var/lib/apt/lists/*
 
 # Crear usuario y grupo traccar
 RUN groupadd -r traccar && useradd -r -g traccar traccar
 
-# Descargar e instalar Traccar usando el script oficial
-RUN wget -q https://github.com/traccar/traccar/releases/download/v5.12/traccar-linux-64-5.12.run \
-    && chmod +x traccar-linux-64-5.12.run \
-    && bash ./traccar-linux-64-5.12.run --noexec --target /opt/traccar \
-    && rm traccar-linux-64-5.12.run \
-    && chown -R traccar:traccar /opt/traccar
+# Descargar e instalar Traccar
+RUN wget -q https://github.com/traccar/traccar/releases/download/v6.7.1/traccar-linux-64-6.7.1.zip \
+    && unzip traccar-linux-64-6.7.1.zip \
+    && ./traccar.run \
+    && rm traccar-linux-64-6.7.1.zip
 
 # Copia tu archivo traccar.xml personalizado al directorio de configuración
 COPY traccar.xml /opt/traccar/conf/traccar.xml
