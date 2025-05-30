@@ -15,7 +15,8 @@ chown -R traccar:traccar /opt/traccar/logs
 chmod -R 755 /opt/traccar/logs
 
 # Iniciar Traccar en modo foreground
-/opt/traccar/bin/traccar run
+cd /opt/traccar/bin
+./traccar run
 
 # Si el comando anterior falla, mostrar los logs
 if [ $? -ne 0 ]; then
