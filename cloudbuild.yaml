@@ -20,7 +20,7 @@ steps:
       - '--region=us-central1' # Ej: us-central1, europe-west1. ¡Elige tu región!
       - '--port=8082'  # <--- ¡IMPORTANTE! Indica a Cloud Run que la app escucha en el 8082
       - '--add-cloudsql-instances=ave-asistencia-vehicular:us-central1:traccardb' # Tu nombre de conexión de instancia
-       - '--update-secrets=DB_PASSWORD=traccar_db_password:latest'
+      - '--update-secrets=DB_PASSWORD=traccar_db_password:latest'
       - '--memory=1Gi'
       - '--platform=managed'
       - '--allow-unauthenticated' # Para que sea accesible públicamente. Considera la seguridad.
