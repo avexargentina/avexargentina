@@ -1,14 +1,13 @@
 <?xml version='1.0' encoding='UTF-8'?>
-
 <!DOCTYPE properties SYSTEM 'http://java.sun.com/dtd/properties.dtd'>
-
 <properties>
-
     <entry key='web.enable'>true</entry>
-    <entry key='web.port'>8082</entry> <entry key='web.path'>./web</entry>
+    <entry key='web.port'>8082</entry>
+    <entry key='web.path'>./web</entry>
     <entry key='web.override'>./override</entry>
     <entry key='web.cacheControl'>max-age=3600,public</entry>
     <entry key='web.healthCheck.enable'>false</entry>
+    
     <entry key='geocoder.enable'>true</entry>
     <entry key='geocoder.type'>locationiq</entry>
     <entry key='geocoder.key'>pk.689d849289c8c63708068b2ff1f63b2d</entry> 
@@ -44,10 +43,13 @@
     <entry key='server.speedUnit'>kmh</entry> 
     <entry key='server.distanceUnit'>km</entry> 
     <entry key='server.volumeUnit'>ltr</entry> 
+    
+    <!-- CONFIGURACIÓN CORREGIDA PARA CLOUD SQL -->
     <entry key='database.driver'>com.mysql.cj.jdbc.Driver</entry>
-    <entry key='database.url'>jdbc:mysql://127.0.0.1:3306/traccar?serverTimezone=UTC&amp;useSSL=false&amp;allowPublicKeyRetrieval=true</entry>
+    <entry key='database.url'>jdbc:mysql://localhost:3306/traccar?socketFactory=com.google.cloud.sql.mysql.SocketFactory&amp;cloudSqlInstance=ave-asistencia-vehicular:us-central1:traccardb&amp;useSSL=false&amp;serverTimezone=UTC&amp;allowPublicKeyRetrieval=true</entry>
     <entry key='database.user'>traccar_user</entry>
     <entry key='database.password'>${DB_PASSWORD}</entry>
+    
     <entry key='database.ignoreUnknown'>false</entry>
     <entry key='database.generateQueries'>false</entry>
     <entry key='database.changelog'>./schema/changelog-master.xml</entry>
@@ -64,13 +66,15 @@
     <entry key='database.selectStatistics'>SELECT * FROM statistics WHERE captureTime BETWEEN :from AND :to ORDER BY captureTime</entry>
     <entry key='database.selectDrivers'>SELECT * FROM drivers WHERE deviceId = :deviceId</entry>
 
-    <entry key='status.timeout'>600</entry> <entry key='status.updateDeviceState'>false</entry>
+    <entry key='status.timeout'>600</entry>
+    <entry key='status.updateDeviceState'>false</entry>
 
     <entry key='osmand.port'>5055</entry>
     <entry key='notificator.types'>web,mail</entry> 
     <entry key='notificator.telegram.key'></entry>
     <entry key='notificator.telegram.chatId'></entry>
     <entry key='command.deviceReadonly'>false</entry>
+    
     <entry key='filter.enable'>true</entry>
     <entry key='filter.future'>86400</entry> 
     <entry key='filter.skipLimit'>3600</entry>
