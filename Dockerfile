@@ -1,13 +1,12 @@
 # Usa la imagen oficial de Traccar como base
 FROM traccar/traccar:latest
 
-# Copia tu archivo traccar.xml personalizado al directorio de configuración.
-# El archivo será propiedad de root:root con permisos de lectura para otros.
-# La imagen base traccar/traccar:latest debería configurar USER traccar
-# para que el proceso de Traccar se ejecute como usuario 'traccar'.
+# Copia tu archivo traccar.xml personalizado al directorio de configuración
 COPY traccar.xml /opt/traccar/conf/traccar.xml
 
-# No se necesita USER root, chown, ni USER traccar aquí,
-# ya que la imagen base debería manejar el usuario de ejecución.
-# El proceso Traccar, ejecutándose como 'traccar', debería poder leer
-# el archivo traccar.xml aunque sea propiedad de root.
+# Script de inicio personalizado
+COPY start.sh /opt/traccar/bin/start.sh
+RUN chmod +x /opt/traccar/bin/start.sh
+
+# Usar el script de inicio personalizado
+ENTRYPOINT ["/opt/traccar/bin/start.sh"]
