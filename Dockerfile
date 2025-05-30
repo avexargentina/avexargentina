@@ -12,11 +12,11 @@ RUN apt-get update && apt-get install -y \
 # Crear usuario y grupo traccar
 RUN groupadd -r traccar && useradd -r -g traccar traccar
 
-# Descargar e instalar Traccar
-RUN wget -q https://www.traccar.org/download/traccar-linux-64-latest.deb \
-    && mkdir -p /opt/traccar \
-    && dpkg-deb -x traccar-linux-64-latest.deb /opt/traccar \
-    && rm traccar-linux-64-latest.deb \
+# Descargar e instalar Traccar usando el script oficial
+RUN wget -q https://www.traccar.org/download/traccar-linux-64-latest.run \
+    && chmod +x traccar-linux-64-latest.run \
+    && ./traccar-linux-64-latest.run --noexec --target /opt/traccar \
+    && rm traccar-linux-64-latest.run \
     && chown -R traccar:traccar /opt/traccar
 
 # Copia tu archivo traccar.xml personalizado al directorio de configuración
