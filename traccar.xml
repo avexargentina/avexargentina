@@ -9,5 +9,7 @@
     <entry key='database.user'>traccar_user</entry>
     <entry key='database.password'>${DB_PASSWORD}</entry>
     <entry key='logger.console'>true</entry>
+    <entry key='database.checkVersion'>true</entry>
+    <entry key='database.changelog'>./schema/changelog-master.xml</entry>
 
 </properties>
