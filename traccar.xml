@@ -5,7 +5,7 @@
     <!-- Documentation: https://www.traccar.org/configuration-file/ -->
 
     <entry key='database.driver'>com.mysql.cj.jdbc.Driver</entry>
-    <entry key='database.url'>jdbc:mysql://google/traccar?cloudSqlInstance=ave-asistencia-vehicular:us-central1:traccardb&amp;socketFactory=com.google.cloud.sql.mysql.SocketFactory&amp;serverTimezone=UTC</entry>
+    <entry key='database.url'>jdbc:mysql://127.0.0.1:3306/traccar?serverTimezone=UTC&amp;useSSL=false&amp;allowPublicKeyRetrieval=true</entry>
     <entry key='database.user'>traccar_user</entry>
     <entry key='database.password'>${DB_PASSWORD}</entry>
     <entry key='logger.console'>true</entry>
