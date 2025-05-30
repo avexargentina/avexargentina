@@ -1,45 +1,17 @@
-<!-- traccar.xml -->
 <?xml version='1.0' encoding='UTF-8'?>
+
 <!DOCTYPE properties SYSTEM 'http://java.sun.com/dtd/properties.dtd'>
+
 <properties>
-    <!-- Base de datos MySQL Cloud SQL -->
+
     <entry key='database.driver'>com.mysql.cj.jdbc.Driver</entry>
-    <entry key='database.url'>
-        jdbc:mysql://127.0.0.1:3306/traccar
-        ?socketFactory=com.google.cloud.sql.mysql.SocketFactory
-        &amp;cloudSqlInstance=ave-asistencia-vehicular:us-central1:traccar-db-mysql
-        &amp;serverTimezone=UTC
-        &amp;useSSL=false
-        &amp;allowMultiQueries=true
-        &amp;autoReconnect=true
-        &amp;useUnicode=true
-        &amp;characterEncoding=utf8
-        &amp;allowPublicKeyRetrieval=true
-    </entry>
+    <entry key='database.url'>jdbc:mysql://traccar-db-mysql:3306/traccar?serverTimezone=UTC&amp;useSSL=false&amp;allowPublicKeyRetrieval=true&amp;allowMultiQueries=true&amp;autoReconnect=true&amp;characterEncoding=UTF-8</entry>
     <entry key='database.user'>traccar_user</entry>
     <entry key='database.password'>password_traccar_user</entry>
 
-    <!-- Pool de conexiones -->
-    <entry key='database.maxPoolSize'>10</entry>
-    <entry key='database.connectionTimeout'>30000</entry>
-    <entry key='database.idleTimeout'>300000</entry>
-    <entry key='database.maxLifetime'>900000</entry>
-    <entry key='database.leakDetectionThreshold'>60000</entry>
+    <entry key='database.checkConnection'>true</entry>
+    <entry key='database.maxPoolSize'>10</entry> <entry key='database.ignoreUnknownColumns'>true</entry> <entry key='web.port'>8082</entry>
 
-    <!-- Web server -->
-    <entry key='web.enable'>true</entry>
-    <entry key='web.port'>8080</entry>
-    <entry key='web.address'>0.0.0.0</entry>
+    <entry key='api.enable'>true</entry>
 
-    <!-- Logging -->
-    <entry key='logger.enable'>true</entry>
-    <entry key='logger.level'>info</entry>
-    <entry key='logger.file'>./logs/tracker-server.log</entry>
-    <entry key='logger.rotate'>true</entry>
-
-    <!-- Protocolos GPS habituales -->
-    <entry key='gps103.port'>5001</entry>
-    <entry key='tk103.port'>5002</entry>
-    <entry key='gl100.port'>5003</entry>
-    <!-- … demás protocolos si los necesitás … -->
-</properties>
+    </properties>
