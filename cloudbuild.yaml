@@ -16,16 +16,15 @@ steps:
       - 'traccar-service'
       - '--image=gcr.io/$PROJECT_ID/mi-traccar:$SHORT_SHA'
       - '--region=us-central1'
-      - '--port=8080'  # Cambiado a 8080 (puerto estándar de Cloud Run)
+      - '--port=8080'
       - '--add-cloudsql-instances=ave-asistencia-vehicular:us-central1:traccardb'
       - '--update-secrets=DB_PASSWORD=traccar_db_password:latest'
-      - '--memory=2Gi'  # Aumentado a 2GB
-      - '--cpu=2'       # Aumentado a 2 CPUs
+      - '--memory=2Gi'
+      - '--cpu=2'
       - '--timeout=3600'
       - '--max-instances=10'
       - '--min-instances=0'
-      - '--startup-cpu-boost'  # Acelera el inicio
-      - '--execution-environment=gen2'  # Usa la segunda generación
+      - '--execution-environment=gen2'
       - '--platform=managed'
       - '--allow-unauthenticated'
       - '--quiet'
