@@ -8,5 +8,11 @@ COPY traccar.xml /opt/traccar/conf/traccar.xml
 COPY start.sh /opt/traccar/bin/start.sh
 RUN chmod +x /opt/traccar/bin/start.sh
 
+# Configurar permisos
+RUN chown -R traccar:traccar /opt/traccar
+
+# Cambiar al usuario traccar
+USER traccar
+
 # Usar el script de inicio personalizado
 ENTRYPOINT ["/opt/traccar/bin/start.sh"]
