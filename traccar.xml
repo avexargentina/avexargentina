@@ -10,80 +10,49 @@
     <entry key='web.healthCheck.enable'>true</entry>
     
     <!-- Geocoder Configuration -->
-    <entry key='geocoder.enable'>true</entry>
-    <entry key='geocoder.type'>locationiq</entry>
-    <entry key='geocoder.key'>pk.689d849289c8c63708068b2ff1f63b2d</entry> 
-    <entry key='geocoder.ignorePositions'>true</entry>
-    <entry key='geocoder.reuseDistance'>100</entry>
-
+    <entry key='geocoder.enable'>false</entry>
+    
     <!-- Logger Configuration -->
     <entry key='logger.enable'>true</entry>
-    <entry key='logger.level'>info</entry> 
+    <entry key='logger.level'>debug</entry> 
     <entry key='logger.console'>true</entry> 
     <entry key='logger.file'>./logs/tracker-server.log</entry>
     <entry key='logger.rotate'>true</entry>
 
     <!-- Event Configuration -->
     <entry key='event.enable'>true</entry>
-    <entry key='event.motion.processInvalidPositions'>false</entry>
-    <entry key='event.motion.speedThreshold'>0.01</entry>
-    <entry key='event.overspeed.minimalDuration'>0</entry>
-    <entry key='event.overspeed.preferLowest'>false</entry>
-    <entry key='event.geofence.polylineDistance'>25</entry>
-    <entry key='event.maintenance.autoClear'>false</entry>
 
     <!-- Processing Configuration -->
-    <entry key='processing.computedAttributes.enable'>true</entry>
-    <entry key='processing.engineHours.enable'>true</entry>
+    <entry key='processing.computedAttributes.enable'>false</entry>
+    <entry key='processing.engineHours.enable'>false</entry>
     <entry key='processing.copyAttributes.enable'>false</entry>
 
-    <!-- Media Configuration -->
-    <entry key='media.path'>./media</entry>
-
     <!-- Server Configuration -->
-    <entry key='server.statistics'>https://www.traccar.org/analytics/</entry>
+    <entry key='server.statistics'></entry>
     <entry key='server.maxRequestTime'>600000</entry>
     <entry key='server.buffering.threshold'>0</entry>
     <entry key='server.forward'>false</entry>
-    <entry key='server.forward.json'>true</entry>
     <entry key='server.temperatureUnit'>C</entry>
     <entry key='server.speedUnit'>kmh</entry> 
     <entry key='server.distanceUnit'>km</entry> 
-    <entry key='server.volumeUnit'>ltr</entry> 
     
     <!-- Database Configuration for Cloud SQL -->
     <entry key='database.driver'>com.mysql.cj.jdbc.Driver</entry>
-    <entry key='database.url'>jdbc:mysql://localhost:3306/traccar?socketFactory=com.google.cloud.sql.mysql.SocketFactory&amp;cloudSqlInstance=ave-asistencia-vehicular:us-central1:traccardb&amp;useSSL=false&amp;serverTimezone=UTC&amp;allowPublicKeyRetrieval=true&amp;connectTimeout=60000&amp;socketTimeout=60000&amp;autoReconnect=true</entry>
+    <entry key='database.url'>jdbc:mysql://localhost:3306/traccar?socketFactory=com.google.cloud.sql.mysql.SocketFactory&amp;cloudSqlInstance=ave-asistencia-vehicular:us-central1:traccardb&amp;useSSL=false&amp;serverTimezone=UTC&amp;allowPublicKeyRetrieval=true&amp;connectTimeout=30000&amp;socketTimeout=30000&amp;autoReconnect=true</entry>
     <entry key='database.user'>traccar_user</entry>
-    <entry key='database.password'>${DB_PASSWORD}</entry>
+    <entry key='database.password'>yS-a9ZLj#c=7&amp;y)X</entry>
     
     <!-- Database Options -->
-    <entry key='database.ignoreUnknown'>false</entry>
+    <entry key='database.ignoreUnknown'>true</entry>
     <entry key='database.generateQueries'>false</entry>
     <entry key='database.changelog'>./schema/changelog-master.xml</entry>
-    <entry key='database.saveEmpty'>false</entry>
 
     <!-- Status Configuration -->
     <entry key='status.timeout'>600</entry>
-    <entry key='status.updateDeviceState'>false</entry>
 
-    <!-- Protocol Configuration -->
+    <!-- Protocol Configuration - Solo el mínimo necesario -->
     <entry key='osmand.port'>5055</entry>
     
-    <!-- Notification Configuration -->
-    <entry key='notificator.types'>web,mail</entry> 
-    <entry key='notificator.telegram.key'></entry>
-    <entry key='notificator.telegram.chatId'></entry>
-    <entry key='command.deviceReadonly'>false</entry>
-    
     <!-- Filter Configuration -->
-    <entry key='filter.enable'>true</entry>
-    <entry key='filter.future'>86400</entry> 
-    <entry key='filter.skipLimit'>3600</entry>
-    <entry key='filter.invalid'>true</entry>
-    <entry key='filter.zero'>true</entry>
-    <entry key='filter.duplicate'>true</entry>
-
-    <!-- Location Configuration -->
-    <entry key='location.ipStack.key'></entry>
+    <entry key='filter.enable'>false</entry>
 </properties>
