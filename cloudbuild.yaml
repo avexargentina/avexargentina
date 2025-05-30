@@ -1,117 +1,19 @@
 steps:
-  - name: gcr.io/cloud-builders/docker
-    id: build-traccar-image
-    args:
-      - build
-      - -t
-      - gcr.io/${PROJECT_ID}/traccar-cloudsql:latest
-      - .
+  # 1. Construye la imagen Docker
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/TU_PROJECT_ID/traccar-custom:latest', '.']
+    # Descomenta la siguiente línea si prefieres usar Artifact Registry:
+    # args: ['build', '-t', 'TU_REGION-docker.pkg.dev/TU_PROJECT_ID/TU_REPOSITORIO/traccar-custom:latest', '.']
 
-  - name: gcr.io/cloud-builders/docker
-    id: push-traccar-image
-    args:
-      - push
-      - gcr.io/${PROJECT_ID}/traccar-cloudsql:latest
-    waitFor:
-      - build-traccar-image
+  # 2. Sube la imagen Docker construida
+  # Para GCR:
+images:
+  - 'gcr.io/TU_PROJECT_ID/traccar-custom:latest'
 
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
-    id: create-vm
-    entrypoint: bash
-    args:
-      - -c
-      - |
-        if ! gcloud compute instances describe traccar-server \
-        --zone=us-central1-a --project=${PROJECT_ID} &>/dev/null; then
-          gcloud compute instances create traccar-server \
-            --zone=us-central1-a \
-            --machine-type=e2-standard-2 \
-            --subnet=default \
-            --network-tier=PREMIUM \
-            --maintenance-policy=MIGRATE \
-            --scopes=https://www.googleapis.com/auth/cloud-platform \
-            --tags=traccar-server,http-server,https-server \
-            --image=ubuntu-2004-focal-v20231213 \
-            --image-project=ubuntu-os-cloud \
-            --boot-disk-size=30GB \
-            --boot-disk-type=pd-standard \
-            --project=${PROJECT_ID}
-        fi
+# Para Artifact Registry (asegúrate de que el repositorio exista):
+# images:
+#  - 'TU_REGION-docker.pkg.dev/TU_PROJECT_ID/TU_REPOSITORIO/traccar-custom:latest'
 
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
-    id: setup-firewall
-    entrypoint: bash
-    args:
-      - -c
-      - |
-        if ! gcloud compute firewall-rules describe allow-traccar \
-        --project=${PROJECT_ID} &>/dev/null; then
-          gcloud compute firewall-rules create allow-traccar \
-            --allow tcp:8080,tcp:5001-5050,udp:5001-5050 \
-            --source-ranges=0.0.0.0/0 \
-            --target-tags=traccar-server \
-            --description="Permite acceso a Traccar" \
-            --project=${PROJECT_ID}
-        fi
-
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
-    id: wait-vm-ready
-    entrypoint: bash
-    args:
-      - -c
-      - |
-        sleep 30
-        while [ "$(gcloud compute instances describe traccar-server --zone=us-central1-a --project=${PROJECT_ID} --format='value(status)')" != "RUNNING" ]; do
-          sleep 10
-        done
-
-  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
-    id: deploy-traccar
-    entrypoint: bash
-    args:
-      - -c
-      - |
-        gcloud compute ssh traccar-server --zone=us-central1-a \
-        --project=${PROJECT_ID} --command='
-          sudo apt-get update -y
-          if ! command -v docker &>/dev/null; then
-            sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
-            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-            echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list
-            sudo apt-get update -y
-            sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-            sudo systemctl enable docker
-          fi
-
-          gcloud auth configure-docker --quiet
-
-          mkdir -p ~/traccar/logs && cd ~/traccar
-
-                   cat > docker-compose.yml << EOF
-version: "3.8"
-services:
-  traccar:
-    image: gcr.io/${PROJECT_ID}/traccar-cloudsql:latest
-    container_name: traccar
-    restart: unless-stopped
-    ports:
-      - "8080:8080"
-      - "5001-5050:5001-5050"
-      - "5001-5050:5001-5050/udp"
-    volumes:
-      - ./logs:/opt/traccar/logs
-      - traccar_data:/opt/traccar/data
-    environment:
-      - GOOGLE_APPLICATION_CREDENTIALS=/tmp/key.json
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 120s
-
-volumes:
-  traccar_data:
-    driver: local
-          sudo docker-compose pull
-          sudo docker-compose up -d
+# Opciones (opcional):
+# options:
+#   logging: CLOUD_LOGGING_ONLY
