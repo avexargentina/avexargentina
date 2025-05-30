@@ -12,17 +12,37 @@ COPY --from=downloader /tmp/mysql-socket-factory.jar /opt/traccar/lib/mysql-sock
 # Copiar la configuración personalizada
 COPY traccar.xml /opt/traccar/conf/traccar.xml
 
-# Crear script de inicio que use la variable PORT de Cloud Run
-RUN echo '#!/bin/bash\n\
-PORT=${PORT:-8082}\n\
-# Actualizar el puerto en la configuración\n\
-sed -i "s|<entry key='"'"'web.port'"'"'>8082</entry>|<entry key='"'"'web.port'"'"'>$PORT</entry>|" /opt/traccar/conf/traccar.xml\n\
-# Iniciar Traccar\n\
-exec java -Xms1g -Xmx1g -Djava.net.preferIPv4Stack=true -jar /opt/traccar/tracker-server.jar /opt/traccar/conf/traccar.xml\n\
-' > /opt/traccar/start.sh && chmod +x /opt/traccar/start.sh
+# Crear script de inicio como archivo separado
+COPY <<EOF /opt/traccar/start.sh
+#!/bin/bash
+set -e
 
-# Exponer el puerto (Cloud Run usará la variable PORT)
+# Usar PORT de Cloud Run o default 8082
+PORT=\${PORT:-8082}
+echo "Starting Traccar on port \$PORT"
+
+# Actualizar el puerto en la configuración
+sed -i "s|<entry key=\"web.port\">8082</entry>|<entry key=\"web.port\">\$PORT</entry>|" /opt/traccar/conf/traccar.xml
+
+# Verificar que el archivo de configuración existe
+if [ ! -f /opt/traccar/conf/traccar.xml ]; then
+    echo "Error: traccar.xml no encontrado"
+    exit 1
+fi
+
+# Mostrar configuración del puerto para debug
+grep "web.port" /opt/traccar/conf/traccar.xml || echo "Advertencia: No se encontró configuración de puerto"
+
+# Iniciar Traccar
+echo "Iniciando Traccar..."
+exec java -Xms1g -Xmx1g -Djava.net.preferIPv4Stack=true -jar /opt/traccar/tracker-server.jar /opt/traccar/conf/traccar.xml
+EOF
+
+# Hacer el script ejecutable
+RUN chmod +x /opt/traccar/start.sh
+
+# Exponer el puerto
 EXPOSE 8080
 
-# Usar el script de inicio
-CMD ["/opt/traccar/start.sh"]
+# Usar bash explícitamente
+CMD ["/bin/bash", "/opt/traccar/start.sh"]
