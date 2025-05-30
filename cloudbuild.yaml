@@ -7,7 +7,7 @@ steps:
 
 images:
   # (tus imágenes existentes)
-  - 'gcr.io/TU_PROJECT_ID/traccar-custom:latest'
+  - 'gcr.io/ave-asistencia-vehicular/traccar-custom:latest'
   # O para Artifact Registry:
   # - 'TU_REGION-docker.pkg.dev/TU_PROJECT_ID/TU_REPOSITORIO/traccar-custom:latest'
 
