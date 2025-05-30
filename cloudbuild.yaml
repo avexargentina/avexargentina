@@ -1,19 +1,16 @@
 steps:
-  # 1. Construye la imagen Docker
+  # (tus pasos de compilación existentes)
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'gcr.io/TU_PROJECT_ID/traccar-custom:latest', '.']
-    # Descomenta la siguiente línea si prefieres usar Artifact Registry:
+    # O para Artifact Registry:
     # args: ['build', '-t', 'TU_REGION-docker.pkg.dev/TU_PROJECT_ID/TU_REPOSITORIO/traccar-custom:latest', '.']
 
-  # 2. Sube la imagen Docker construida
-  # Para GCR:
 images:
+  # (tus imágenes existentes)
   - 'gcr.io/TU_PROJECT_ID/traccar-custom:latest'
+  # O para Artifact Registry:
+  # - 'TU_REGION-docker.pkg.dev/TU_PROJECT_ID/TU_REPOSITORIO/traccar-custom:latest'
 
-# Para Artifact Registry (asegúrate de que el repositorio exista):
-# images:
-#  - 'TU_REGION-docker.pkg.dev/TU_PROJECT_ID/TU_REPOSITORIO/traccar-custom:latest'
-
-# Opciones (opcional):
-# options:
-#   logging: CLOUD_LOGGING_ONLY
+# 👇 AÑADE O DESCOMENTA ESTA SECCIÓN
+options:
+  logging: CLOUD_LOGGING_ONLY
