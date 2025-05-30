@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  traccar:
+    build: .
+    ports:
+      - "8082:8082"
+      - "5000-5150:5000-5150"
+      - "5000-5150:5000-5150/udp"
+    volumes:
+      - ./traccar.xml:/opt/traccar/conf/traccar.xml
+    depends_on:
+      - db
+    environment:
+      - TZ=UTC
+      - DB_HOST=${DB_HOST:-db}
+      - DB_PORT=${DB_PORT:-3306}
+      - DB_NAME=${DB_NAME:-traccar}
+      - DB_USER=${DB_USER:-traccar_user}
+      - DB_PASSWORD=${DB_PASSWORD:-password_traccar_user}
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-root_password}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-traccar}
+      - MYSQL_USER=${MYSQL_USER:-traccar_user}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-password_traccar_user}
+    volumes:
+      - traccar-db:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+
+volumes:
+  traccar-db: 
