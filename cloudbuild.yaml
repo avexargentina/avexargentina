@@ -1,30 +1,26 @@
-# cloudbuild.yaml
 steps:
-  # 1. Construir imagen personalizada
-  - name: 'gcr.io/cloud-builders/docker'
-    id: 'build-traccar-image'
+  - name: gcr.io/cloud-builders/docker
+    id: build-traccar-image
     args:
-      - 'build'
-      - '-t'
-      - 'gcr.io/${PROJECT_ID}/traccar-cloudsql:latest'
-      - '.'
-
-  # 2. Subir imagen al Container Registry
-  - name: 'gcr.io/cloud-builders/docker'
-    id: 'push-traccar-image'
+      - build
+      - -t
+      - gcr.io/${PROJECT_ID}/traccar-cloudsql:latest
+      - .
+  - name: gcr.io/cloud-builders/docker
+    id: push-traccar-image
     args:
-      - 'push'
-      - 'gcr.io/${PROJECT_ID}/traccar-cloudsql:latest'
-    waitFor: ['build-traccar-image']
-
-  # 3. Crear VM para Traccar
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:latest'
-    id: 'create-vm'
-    entrypoint: 'bash'
+      - push
+      - gcr.io/${PROJECT_ID}/traccar-cloudsql:latest
+    waitFor:
+      - build-traccar-image
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
+    id: create-vm
+    entrypoint: bash
     args:
-      - '-c'
-      - |
-        if ! gcloud compute instances describe traccar-server --zone=us-central1-a --project=${PROJECT_ID} &>/dev/null; then
+      - -c
+      - >
+        if ! gcloud compute instances describe traccar-server
+        --zone=us-central1-a --project=${PROJECT_ID} &>/dev/null; then
           gcloud compute instances create traccar-server \
             --zone=us-central1-a \
             --machine-type=e2-standard-2 \
@@ -39,15 +35,14 @@ steps:
             --boot-disk-type=pd-standard \
             --project=${PROJECT_ID}
         fi
-
-  # 4. Configurar firewall
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:latest'
-    id: 'setup-firewall'
-    entrypoint: 'bash'
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
+    id: setup-firewall
+    entrypoint: bash
     args:
-      - '-c'
-      - |
-        if ! gcloud compute firewall-rules describe allow-traccar --project=${PROJECT_ID} &>/dev/null; then
+      - -c
+      - >
+        if ! gcloud compute firewall-rules describe allow-traccar
+        --project=${PROJECT_ID} &>/dev/null; then
           gcloud compute firewall-rules create allow-traccar \
             --allow tcp:8080,tcp:5001-5050,udp:5001-5050 \
             --source-ranges=0.0.0.0/0 \
@@ -55,27 +50,25 @@ steps:
             --description="Permite acceso a Traccar" \
             --project=${PROJECT_ID}
         fi
-
-  # 5. Esperar VM lista
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:latest'
-    id: 'wait-vm-ready'
-    entrypoint: 'bash'
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
+    id: wait-vm-ready
+    entrypoint: bash
     args:
-      - '-c'
-      - |
+      - -c
+      - >
         sleep 30
+
         while [ "$(gcloud compute instances describe traccar-server --zone=us-central1-a --project=${PROJECT_ID} --format='value(status)')" != "RUNNING" ]; do
           sleep 10
         done
-
-  # 6. Desplegar Traccar con Docker Compose
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:latest'
-    id: 'deploy-traccar'
-    entrypoint: 'bash'
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
+    id: deploy-traccar
+    entrypoint: bash
     args:
-      - '-c'
-      - |
-        gcloud compute ssh traccar-server --zone=us-central1-a --project=${PROJECT_ID} --command="
+      - -c
+      - >
+        gcloud compute ssh traccar-server --zone=us-central1-a
+        --project=${PROJECT_ID} --command="
           sudo apt-get update -y
           if ! command -v docker &>/dev/null; then
             sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
@@ -88,41 +81,40 @@ steps:
           gcloud auth configure-docker --quiet
           mkdir -p ~/traccar/logs && cd ~/traccar
           cat > docker-compose.yml << 'EOF'
-version: '3.8'
+version: "3.8"
 services:
   traccar:
     image: gcr.io/${PROJECT_ID}/traccar-cloudsql:latest
     container_name: traccar
     restart: unless-stopped
     ports:
-      - "8080:8080"
-      - "5001-5050:5001-5050"
-      - "5001-5050:5001-5050/udp"
+      - 8080:8080
+      - 5001-5050:5001-5050
+      - 5001-5050:5001-5050/udp
     volumes:
       - ./logs:/opt/traccar/logs
       - traccar_data:/opt/traccar/data
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/tmp/key.json
     healthcheck:
-      test: ["CMD","curl","-f","http://localhost:8080"]
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:8080
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 120s
-
 volumes:
   traccar_data:
-    driver: local
-EOF
-          sudo docker-compose pull
-          sudo docker-compose up -d
-        "
-
+    driver: |-
+      local
+      sudo docker-compose pull sudo docker-compose up -d "
 options:
   logging: CLOUD_LOGGING_ONLY
-  machineType: 'E2_HIGHCPU_8'
-timeout: '1800s'
-
+  machineType: E2_HIGHCPU_8
+timeout: 1800s
 substitutions:
-  _ZONE: 'us-central1-a'
-  _MACHINE_TYPE: 'e2-standard-2'
+  _ZONE: us-central1-a
+  _MACHINE_TYPE: e2-standard-2
