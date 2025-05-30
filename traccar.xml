@@ -1,15 +1,64 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
+
 <!DOCTYPE properties SYSTEM 'http://java.sun.com/dtd/properties.dtd'>
-<properties>  
 
-    <!-- Documentation: https://www.traccar.org/configuration-file/ -->
+<properties>
 
-    <entry key='database.driver'>com.mysql.cj.jdbc.Driver</entry>
+    <entry key='web.enable'>true</entry>
+    <entry key='web.port'>8082</entry> <entry key='web.path'>./web</entry>
+    <entry key='web.override'>./override</entry>
+    <entry key='web.cacheControl'>max-age=3600,public</entry>
+    <entry key='web.healthCheck.enable'>false</entry> <entry key='geocoder.enable'>true</entry>
+    <entry key='geocoder.type'>locationiq</entry> <entry key='geocoder.key'>pk.689d849289c8c63708068b2ff1f63b2d</entry> <entry key='geocoder.ignorePositions'>true</entry>
+    <entry key='geocoder.reuseDistance'>100</entry>
+
+    <entry key='logger.enable'>true</entry>
+    <entry key='logger.level'>info</entry> <entry key='logger.console'>true</entry> <entry key='logger.file'>./logs/tracker-server.log</entry> <entry key='logger.rotate'>true</entry>
+
+    <entry key='event.enable'>true</entry>
+    <entry key='event.motion.processInvalidPositions'>false</entry>
+    <entry key='event.motion.speedThreshold'>0.01</entry>
+    <entry key='event.overspeed.minimalDuration'>0</entry>
+    <entry key='event.overspeed.preferLowest'>false</entry>
+    <entry key='event.geofence.polylineDistance'>25</entry>
+    <entry key='event.maintenance.autoClear'>false</entry>
+
+    <entry key='processing.computedAttributes.enable'>true</entry>
+    <entry key='processing.engineHours.enable'>true</entry>
+    <entry key='processing.copyAttributes.enable'>false</entry>
+
+    <entry key='media.path'>./media</entry>
+
+    <entry key='server.statistics'>https://www.traccar.org/analytics/</entry>
+    <entry key='server.maxRequestTime'>600000</entry> <entry key='server.buffering.threshold'>0</entry>
+    <entry key='server.forward'>false</entry>
+    <entry key='server.forward.json'>true</entry>
+    <entry key='server.temperatureUnit'>C</entry> <entry key='server.speedUnit'>kmh</entry> <entry key='server.distanceUnit'>km</entry> <entry key='server.volumeUnit'>ltr</entry> <entry key='database.driver'>com.mysql.cj.jdbc.Driver</entry>
     <entry key='database.url'>jdbc:mysql://127.0.0.1:3306/traccar?serverTimezone=UTC&amp;useSSL=false&amp;allowPublicKeyRetrieval=true</entry>
     <entry key='database.user'>traccar_user</entry>
     <entry key='database.password'>${DB_PASSWORD}</entry>
-    <entry key='logger.console'>true</entry>
-    <entry key='database.checkVersion'>true</entry>
+    <entry key='database.ignoreUnknown'>false</entry>
+    <entry key='database.generateQueries'>false</entry>
     <entry key='database.changelog'>./schema/changelog-master.xml</entry>
+    <entry key='database.selectDevicesAll'>SELECT * FROM devices;</entry>
+    <entry key='database.saveEmpty'>false</entry>
 
-</properties>
+    <entry key='database.loginUser'>SELECT * FROM users WHERE email = :email</entry>
+    <entry key='database.selectPositions'>SELECT * FROM positions WHERE deviceId = :deviceId AND fixTime BETWEEN :from AND :to ORDER BY fixTime</entry>
+    <entry key='database.selectLatestPositions'>SELECT positions.* FROM positions INNER JOIN devices ON positions.id = devices.positionId;</entry>
+    <entry key='database.updateLatestPosition'>UPDATE devices SET positionId = :id WHERE id = :deviceId</entry>
+    <entry key='database.selectEvents'>SELECT * FROM events WHERE deviceId = :deviceId AND serverTime BETWEEN :from AND :to ORDER BY serverTime</entry>
+    <entry key='database.deletePositions'>DELETE FROM positions WHERE serverTime &lt; :serverTime AND id NOT IN (SELECT positionId FROM devices WHERE positionId IS NOT NULL)</entry>
+    <entry key='database.deleteEvents'>DELETE FROM events WHERE serverTime &lt; :serverTime</entry>
+    <entry key='database.selectStatistics'>SELECT * FROM statistics WHERE captureTime BETWEEN :from AND :to ORDER BY captureTime</entry>
+    <entry key='database.selectDrivers'>SELECT * FROM drivers WHERE deviceId = :deviceId</entry>
+
+    <entry key='status.timeout'>600</entry> <entry key='status.updateDeviceState'>false</entry>
+
+    <entry key='osmand.port'>5055</entry>
+    <entry key='notificator.types'>web,mail</entry> <entry key='notificator.telegram.key'></entry> <entry key='notificator.telegram.chatId'></entry> <entry key='command.deviceReadonly'>false</entry> <entry key='filter.enable'>true</entry>
+    <entry key='filter.future'>86400</entry> <entry key='filter.skipLimit'>3600</entry> <entry key='filter.invalid'>true</entry>
+    <entry key='filter.zero'>true</entry>
+    <entry key='filter.duplicate'>true</entry>
+
+    <entry key='location.ipStack.key'></entry> </properties>
