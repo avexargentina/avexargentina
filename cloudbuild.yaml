@@ -87,7 +87,7 @@ steps:
 
           mkdir -p ~/traccar/logs && cd ~/traccar
 
-          cat > docker-compose.yml << EOF
+                   cat > docker-compose.yml << EOF
 version: "3.8"
 services:
   traccar:
@@ -117,14 +117,3 @@ EOF
 
           sudo docker-compose pull
           sudo docker-compose up -d
-        '
-
-options:
-  logging: CLOUD_LOGGING_ONLY
-  machineType: E2_HIGHCPU_8
-
-timeout: 1800s
-
-substitutions:
-  _ZONE: us-central1-a
-  _MACHINE_TYPE: e2-standard-2
