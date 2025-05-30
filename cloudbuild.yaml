@@ -1,38 +1,247 @@
 steps:
-  # 1. Construir la imagen
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/mi-traccar:$SHORT_SHA', '.']
-  
-  # 2. Subir la imagen
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/mi-traccar:$SHORT_SHA']
-  
-  # 3. Desplegar en Cloud Run
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: gcloud
+  # Paso 1: Crear instancia de Compute Engine para Traccar
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:latest'
+    id: 'create-vm'
+    entrypoint: 'bash'
     args:
-      - 'run'
-      - 'deploy'
-      - 'traccar-service'
-      - '--image=gcr.io/$PROJECT_ID/mi-traccar:$SHORT_SHA'
-      - '--region=us-central1'
-      - '--port=8080'
-      - '--set-env-vars=PORT=8080'
-      - '--add-cloudsql-instances=ave-asistencia-vehicular:us-central1:traccardb'
-      - '--update-secrets=DB_PASSWORD=traccar_db_password:latest'
-      - '--memory=2Gi'
-      - '--cpu=2'
-      - '--timeout=3600'
-      - '--max-instances=10'
-      - '--min-instances=0'
-      - '--execution-environment=gen2'
-      - '--platform=managed'
-      - '--allow-unauthenticated'
-      - '--quiet'
+      - '-c'
+      - |
+        # Verificar si la VM ya existe
+        if gcloud compute instances describe traccar-server --zone=us-central1-a --project=${PROJECT_ID} >/dev/null 2>&1; then
+          echo "VM traccar-server ya existe, saltando creación..."
+        else
+          echo "Creando VM traccar-server..."
+          gcloud compute instances create traccar-server \
+            --zone=us-central1-a \
+            --machine-type=e2-micro \
+            --subnet=default \
+            --network-tier=PREMIUM \
+            --maintenance-policy=MIGRATE \
+            --scopes=https://www.googleapis.com/auth/cloud-platform \
+            --tags=traccar-server,http-server,https-server \
+            --image=ubuntu-2004-focal-v20231213 \
+            --image-project=ubuntu-os-cloud \
+            --boot-disk-size=20GB \
+            --boot-disk-type=pd-standard \
+            --project=${PROJECT_ID}
+        fi
 
-# Opcional: Especificar las imágenes que se subirán
-images:
-  - 'gcr.io/$PROJECT_ID/mi-traccar:$SHORT_SHA'
+  # Paso 2: Configurar reglas de firewall
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:latest'
+    id: 'setup-firewall'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        # Crear regla de firewall para Traccar si no existe
+        if ! gcloud compute firewall-rules describe allow-traccar --project=${PROJECT_ID} >/dev/null 2>&1; then
+          echo "Creando regla de firewall para Traccar..."
+          gcloud compute firewall-rules create allow-traccar \
+            --allow tcp:8082,tcp:5001-5050,udp:5001-5050 \
+            --source-ranges=0.0.0.0/0 \
+            --target-tags=traccar-server \
+            --description="Permite acceso a Traccar web y protocolos GPS" \
+            --project=${PROJECT_ID}
+        else
+          echo "Regla de firewall allow-traccar ya existe, saltando..."
+        fi
 
+  # Paso 3: Esperar a que la VM esté lista
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:latest'
+    id: 'wait-vm-ready'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Esperando a que la VM esté lista..."
+        sleep 30
+        
+        # Verificar que la VM esté corriendo
+        while true; do
+          STATUS=$(gcloud compute instances describe traccar-server --zone=us-central1-a --format="value(status)" --project=${PROJECT_ID})
+          if [ "$STATUS" = "RUNNING" ]; then
+            echo "VM está corriendo"
+            break
+          fi
+          echo "VM estado: $STATUS, esperando..."
+          sleep 10
+        done
+    waitFor: ['create-vm']
+
+  # Paso 4: Configurar la VM con Docker y Traccar
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:latest'
+    id: 'setup-traccar'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Configurando Traccar en la VM..."
+        
+        # Configurar la VM mediante SSH
+        gcloud compute ssh traccar-server \
+          --zone=us-central1-a \
+          --project=${PROJECT_ID} \
+          --ssh-flag="-o UserKnownHostsFile=/dev/null" \
+          --ssh-flag="-o CheckHostIP=no" \
+          --ssh-flag="-o StrictHostKeyChecking=no" \
+          --command="
+            # Actualizar sistema
+            sudo apt-get update -y
+            
+            # Instalar Docker
+            if ! command -v docker &> /dev/null; then
+              echo 'Instalando Docker...'
+              sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
+              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+              echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \$(lsb_release -cs) stable' | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+              sudo apt-get update -y
+              sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+              sudo systemctl start docker
+              sudo systemctl enable docker
+              sudo usermod -aG docker \$USER
+            else
+              echo 'Docker ya está instalado'
+            fi
+            
+            # Instalar Docker Compose
+            if ! command -v docker-compose &> /dev/null; then
+              echo 'Instalando Docker Compose...'
+              sudo curl -L \"https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-\$(uname -s)-\$(uname -m)\" -o /usr/local/bin/docker-compose
+              sudo chmod +x /usr/local/bin/docker-compose
+            else
+              echo 'Docker Compose ya está instalado'
+            fi
+            
+            # Crear directorio para Traccar
+            mkdir -p ~/traccar/logs
+            cd ~/traccar
+            
+            # Crear archivo traccar.xml
+            cat > traccar.xml << 'TRACCAR_XML_EOF'
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE properties SYSTEM 'http://java.sun.com/dtd/properties.dtd'>
+<properties>
+    <entry key='database.driver'>com.mysql.cj.jdbc.Driver</entry>
+    <entry key='database.url'>jdbc:mysql://10.90.224.4:3306/traccar?serverTimezone=UTC&amp;useSSL=false&amp;allowMultiQueries=true&amp;autoReconnect=true&amp;useUnicode=true&amp;characterEncoding=utf8&amp;allowPublicKeyRetrieval=true</entry>
+    <entry key='database.user'>traccar_user</entry>
+    <entry key='database.password'>password_traccar_user</entry>
+    <entry key='database.maxPoolSize'>20</entry>
+    <entry key='database.connectionTimeout'>300000</entry>
+    <entry key='web.enable'>true</entry>
+    <entry key='web.port'>8082</entry>
+    <entry key='web.address'>0.0.0.0</entry>
+    <entry key='geocoder.enable'>true</entry>
+    <entry key='geocoder.type'>nominatim</entry>
+    <entry key='logger.enable'>true</entry>
+    <entry key='logger.level'>info</entry>
+    <entry key='logger.file'>./logs/tracker-server.log</entry>
+    <entry key='gps103.port'>5001</entry>
+    <entry key='tk103.port'>5002</entry>
+    <entry key='gl100.port'>5003</entry>
+    <entry key='gl200.port'>5004</entry>
+    <entry key='t55.port'>5005</entry>
+    <entry key='teltonika.port'>5027</entry>
+    <entry key='gt06.port'>5023</entry>
+    <entry key='h02.port'>5013</entry>
+    <entry key='filter.enable'>true</entry>
+    <entry key='filter.invalid'>true</entry>
+    <entry key='filter.zero'>true</entry>
+    <entry key='filter.duplicate'>true</entry>
+</properties>
+TRACCAR_XML_EOF
+            
+            # Crear docker-compose.yml
+            cat > docker-compose.yml << 'COMPOSE_EOF'
+version: '3.8'
+services:
+  traccar:
+    image: traccar/traccar:latest
+    container_name: traccar
+    hostname: traccar
+    restart: unless-stopped
+    ports:
+      - \"8082:8082\"
+      - \"5001-5050:5001-5050\"
+      - \"5001-5050:5001-5050/udp\"
+    volumes:
+      - ./traccar.xml:/opt/traccar/conf/traccar.xml:ro
+      - ./logs:/opt/traccar/logs
+      - traccar_data:/opt/traccar/data
+    environment:
+      - JAVA_OPTS=-Xms512m -Xmx1024m
+    healthcheck:
+      test: [\"CMD\", \"curl\", \"-f\", \"http://localhost:8082\"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  traccar_data:
+    driver: local
+COMPOSE_EOF
+            
+            # Iniciar Traccar
+            echo 'Iniciando Traccar...'
+            sudo docker-compose down || true
+            sudo docker-compose pull
+            sudo docker-compose up -d
+            
+            # Verificar que esté corriendo
+            sleep 30
+            sudo docker-compose ps
+            sudo docker logs traccar --tail 20
+            
+            echo 'Configuración de Traccar completada!'
+          "
+    waitFor: ['wait-vm-ready', 'setup-firewall']
+
+  # Paso 5: Verificar despliegue y mostrar información
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:latest'
+    id: 'verify-deployment'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Verificando despliegue..."
+        
+        # Obtener IP pública de la VM
+        VM_IP=$(gcloud compute instances describe traccar-server --zone=us-central1-a --format="value(networkInterfaces[0].accessConfigs[0].natIP)" --project=${PROJECT_ID})
+        
+        echo "======================================"
+        echo "🎉 DESPLIEGUE COMPLETADO CON ÉXITO!"
+        echo "======================================"
+        echo ""
+        echo "📊 Información del despliegue:"
+        echo "   • IP pública de la VM: $VM_IP"
+        echo "   • URL de Traccar: http://$VM_IP:8082"
+        echo "   • Usuario por defecto: admin"
+        echo "   • Contraseña por defecto: admin"
+        echo ""
+        echo "🔗 Base de datos Cloud SQL:"
+        echo "   • Instancia: ave-asistencia-vehicular:us-central1:traccar-db-mysql"
+        echo "   • IP privada: 10.90.224.4"
+        echo "   • Base de datos: traccar"
+        echo "   • Usuario: traccar_user"
+        echo ""
+        echo "⚠️  IMPORTANTE:"
+        echo "   • Cambia la contraseña del usuario admin inmediatamente"
+        echo "   • Los datos se persisten en Cloud SQL"
+        echo "   • Puertos GPS habilitados: 5001-5050 (TCP/UDP)"
+        echo ""
+        echo "🔍 Para verificar el estado:"
+        echo "   gcloud compute ssh traccar-server --zone=us-central1-a --command='sudo docker-compose ps'"
+    waitFor: ['setup-traccar']
+
+# Opciones de Cloud Build
 options:
   logging: CLOUD_LOGGING_ONLY
+  machineType: 'E2_HIGHCPU_8'
+  
+# Timeout total del build
+timeout: '1200s'
+
+# Sustituciones (variables)
+substitutions:
+  _ZONE: 'us-central1-a'
+  _MACHINE_TYPE: 'e2-micro'
