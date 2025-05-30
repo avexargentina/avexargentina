@@ -1,9 +1,13 @@
 # Usa la imagen oficial de Traccar como base
 FROM traccar/traccar:latest
 
-# Elimina la configuración por defecto y copia tu archivo traccar.xml personalizado
-# La configuración de Traccar se encuentra en /opt/traccar/conf/
-COPY --chown=traccar:traccar traccar.xml /opt/traccar/conf/traccar.xml
+# Copia tu archivo traccar.xml personalizado al directorio de configuración.
+# Inicialmente será propiedad de root.
+COPY traccar.xml /opt/traccar/conf/traccar.xml
+
+# Cambia el propietario del archivo de configuración al usuario 'traccar',
+# que está definido en la imagen base.
+RUN chown traccar:traccar /opt/traccar/conf/traccar.xml
 
 # Traccar se ejecuta por defecto en el puerto 8082, que ya está expuesto por la imagen base.
 # Si cambiaste 'web.port' en traccar.xml, asegúrate de exponer el puerto correcto.
