@@ -6,6 +6,7 @@ steps:
       - -t
       - gcr.io/${PROJECT_ID}/traccar-cloudsql:latest
       - .
+
   - name: gcr.io/cloud-builders/docker
     id: push-traccar-image
     args:
@@ -13,13 +14,14 @@ steps:
       - gcr.io/${PROJECT_ID}/traccar-cloudsql:latest
     waitFor:
       - build-traccar-image
+
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
     id: create-vm
     entrypoint: bash
     args:
       - -c
       - >
-        if ! gcloud compute instances describe traccar-server
+        if ! gcloud compute instances describe traccar-server \
         --zone=us-central1-a --project=${PROJECT_ID} &>/dev/null; then
           gcloud compute instances create traccar-server \
             --zone=us-central1-a \
@@ -35,13 +37,14 @@ steps:
             --boot-disk-type=pd-standard \
             --project=${PROJECT_ID}
         fi
+
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
     id: setup-firewall
     entrypoint: bash
     args:
       - -c
       - >
-        if ! gcloud compute firewall-rules describe allow-traccar
+        if ! gcloud compute firewall-rules describe allow-traccar \
         --project=${PROJECT_ID} &>/dev/null; then
           gcloud compute firewall-rules create allow-traccar \
             --allow tcp:8080,tcp:5001-5050,udp:5001-5050 \
@@ -50,6 +53,7 @@ steps:
             --description="Permite acceso a Traccar" \
             --project=${PROJECT_ID}
         fi
+
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
     id: wait-vm-ready
     entrypoint: bash
@@ -57,17 +61,17 @@ steps:
       - -c
       - >
         sleep 30
-
         while [ "$(gcloud compute instances describe traccar-server --zone=us-central1-a --project=${PROJECT_ID} --format='value(status)')" != "RUNNING" ]; do
           sleep 10
         done
+
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
     id: deploy-traccar
     entrypoint: bash
     args:
       - -c
       - >
-        gcloud compute ssh traccar-server --zone=us-central1-a
+        gcloud compute ssh traccar-server --zone=us-central1-a \
         --project=${PROJECT_ID} --command="
           sudo apt-get update -y
           if ! command -v docker &>/dev/null; then
@@ -78,8 +82,11 @@ steps:
             sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
             sudo systemctl enable docker
           fi
+
           gcloud auth configure-docker --quiet
+
           mkdir -p ~/traccar/logs && cd ~/traccar
+
           cat > docker-compose.yml << 'EOF'
 version: "3.8"
 services:
@@ -97,24 +104,27 @@ services:
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/tmp/key.json
     healthcheck:
-      test:
-        - CMD
-        - curl
-        - -f
-        - http://localhost:8080
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 120s
+
 volumes:
   traccar_data:
-    driver: |-
-      local
-      sudo docker-compose pull sudo docker-compose up -d "
+    driver: local
+EOF
+
+          sudo docker-compose pull
+          sudo docker-compose up -d
+        "
+
 options:
   logging: CLOUD_LOGGING_ONLY
   machineType: E2_HIGHCPU_8
+
 timeout: 1800s
+
 substitutions:
   _ZONE: us-central1-a
   _MACHINE_TYPE: e2-standard-2
