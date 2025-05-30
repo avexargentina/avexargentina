@@ -1,7 +1,7 @@
 steps:
   # (tus pasos de compilación existentes)
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/TU_PROJECT_ID/traccar-custom:latest', '.']
+    args: ['build', '-t', 'gcr.io/ave-asistencia-vehicular/traccar-custom:latest', '.']
     # O para Artifact Registry:
     # args: ['build', '-t', 'TU_REGION-docker.pkg.dev/TU_PROJECT_ID/TU_REPOSITORIO/traccar-custom:latest', '.']
 
