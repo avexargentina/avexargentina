@@ -1,45 +1,33 @@
 steps:
-  # 1. Construye tu imagen (basada en traccar/traccar:latest) y la etiqueta
-  #    para subirla a Google Container Registry (GCR) o Artifact Registry.
-  #    El '.' al final se refiere al directorio actual donde está tu Dockerfile. 
+  # 1. Construir la imagen
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'gcr.io/$PROJECT_ID/mi-traccar:$SHORT_SHA', '.']
-
-  # 2. Sube la imagen a Google Container Registry (GCR) o Artifact Registry
+  
+  # 2. Subir la imagen
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/$PROJECT_ID/mi-traccar:$SHORT_SHA']
-
-  # 3. Despliega la imagen en Cloud Run, especificando el puerto 8082
+  
+  # 3. Desplegar en Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
       - 'run'
       - 'deploy'
-      - 'traccar-service'  # Dale un nombre a tu servicio en Cloud Run
+      - 'traccar-service'
       - '--image=gcr.io/$PROJECT_ID/mi-traccar:$SHORT_SHA'
-      - '--region=us-central1' # Ej: us-central1, europe-west1. ¡Elige tu región!
-      - '--port=8082'  # <--- ¡IMPORTANTE! Indica a Cloud Run que la app escucha en el 8082
-      - '--add-cloudsql-instances=ave-asistencia-vehicular:us-central1:traccardb' # Tu nombre de conexión de instancia
+      - '--region=us-central1'
+      - '--port=8082'
+      - '--add-cloudsql-instances=ave-asistencia-vehicular:us-central1:traccardb'
       - '--update-secrets=DB_PASSWORD=traccar_db_password:latest'
       - '--memory=1Gi'
+      - '--cpu=1'
+      - '--timeout=3600'
+      - '--max-instances=10'
       - '--platform=managed'
-      - '--allow-unauthenticated' # Para que sea accesible públicamente. Considera la seguridad.
+      - '--allow-unauthenticated'
       - '--quiet'
 
-
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: gcloud
-    args:
-      - 'run'
-      - 'services'
-      - 'add-iam-policy-binding'
-      - 'traccar-service'
-      - '--member=allUsers'
-      - '--role=roles/run.invoker'
-      - '--region=us-central1'
-      - '--project=$PROJECT_ID'
-
-# Opcional: Especifica las imágenes que se subirán
+# Opcional: Especificar las imágenes que se subirán
 images:
   - 'gcr.io/$PROJECT_ID/mi-traccar:$SHORT_SHA'
 
