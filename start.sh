@@ -9,8 +9,17 @@ if [ ! -z "$WEB_ADDRESS" ]; then
     sed -i "s/<entry key='web.address'>.*<\/entry>/<entry key='web.address'>$WEB_ADDRESS<\/entry>/" /opt/traccar/conf/traccar.xml
 fi
 
-# Iniciar Traccar
-/opt/traccar/bin/traccar start
+# Asegurarse de que los directorios necesarios existen y tienen los permisos correctos
+mkdir -p /opt/traccar/logs
+chown -R traccar:traccar /opt/traccar/logs
+chmod -R 755 /opt/traccar/logs
 
-# Mantener el contenedor en ejecución
-tail -f /opt/traccar/logs/tracker-server.log 
+# Iniciar Traccar en modo foreground
+/opt/traccar/bin/traccar run
+
+# Si el comando anterior falla, mostrar los logs
+if [ $? -ne 0 ]; then
+    echo "Traccar failed to start. Showing logs:"
+    cat /opt/traccar/logs/tracker-server.log
+    exit 1
+fi 
