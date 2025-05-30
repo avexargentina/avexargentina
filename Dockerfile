@@ -1,6 +1,9 @@
 # Usa la imagen oficial de Traccar como base
 FROM traccar/traccar:latest
 
+# Crear usuario y grupo traccar si no existen
+RUN groupadd -r traccar && useradd -r -g traccar traccar
+
 # Copia tu archivo traccar.xml personalizado al directorio de configuración
 COPY traccar.xml /opt/traccar/conf/traccar.xml
 
