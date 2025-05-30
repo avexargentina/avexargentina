@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
     default-jre \
     wget \
     gnupg \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Crear usuario y grupo traccar
@@ -13,8 +14,10 @@ RUN groupadd -r traccar && useradd -r -g traccar traccar
 
 # Descargar e instalar Traccar
 RUN wget -q https://www.traccar.org/download/traccar-linux-64-latest.deb \
-    && dpkg -i traccar-linux-64-latest.deb \
-    && rm traccar-linux-64-latest.deb
+    && mkdir -p /opt/traccar \
+    && dpkg-deb -x traccar-linux-64-latest.deb /opt/traccar \
+    && rm traccar-linux-64-latest.deb \
+    && chown -R traccar:traccar /opt/traccar
 
 # Copia tu archivo traccar.xml personalizado al directorio de configuración
 COPY traccar.xml /opt/traccar/conf/traccar.xml
