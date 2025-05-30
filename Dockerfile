@@ -15,7 +15,7 @@ RUN groupadd -r traccar && useradd -r -g traccar traccar
 # Descargar e instalar Traccar usando el script oficial
 RUN wget -q https://www.traccar.org/download/traccar-linux-64-latest.run \
     && chmod +x traccar-linux-64-latest.run \
-    && ./traccar-linux-64-latest.run --noexec --target /opt/traccar \
+    && bash ./traccar-linux-64-latest.run --noexec --target /opt/traccar \
     && rm traccar-linux-64-latest.run \
     && chown -R traccar:traccar /opt/traccar
 
