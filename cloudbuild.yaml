@@ -1,21 +1,17 @@
 steps:
-  # Paso de depuración para listar archivos en el espacio de trabajo
-  - name: 'gcr.io/cloud-builders/gcloud' # O cualquier imagen que tenga 'ls', como alpine
+  # Paso de depuración (puedes eliminarlo si ya no lo necesitas)
+  - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
     args:
       - '-c'
       - 'echo "Contenido de /workspace/:" && ls -la /workspace/'
 
-  # Tu paso de construcción de Docker existente
+  # Paso de construcción de Docker
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/tu-project-id/traccar-custom:latest', '.'] # Asegúrate que tu-project-id sea el correcto
+    args: ['build', '-t', 'gcr.io/ave-asistencia-vehicular/traccar-custom:latest', '.'] # USA TU ID DE PROYECTO REAL AQUÍ
 
 images:
-  # (tus imágenes existentes)
-  - 'gcr.io/ave-asistencia-vehicular/traccar-custom:latest'
-  # O para Artifact Registry:
-  # - 'TU_REGION-docker.pkg.dev/TU_PROJECT_ID/TU_REPOSITORIO/traccar-custom:latest'
+  - 'gcr.io/ave-asistencia-vehicular/traccar-custom:latest' # Y AQUÍ TAMBIÉN
 
-# 👇 AÑADE O DESCOMENTA ESTA SECCIÓN
 options:
   logging: CLOUD_LOGGING_ONLY
