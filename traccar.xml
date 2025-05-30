@@ -1,7 +1,15 @@
-<server>
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!DOCTYPE properties SYSTEM 'http://java.sun.com/dtd/properties.dtd'>
+
+<properties>
+
+    <entry key='web.port'>8082</entry>
+    <entry key='web.path'>./web</entry>
     <entry key='database.driver'>com.mysql.cj.jdbc.Driver</entry>
     <entry key='database.url'>jdbc:mysql://google/traccar?cloudSqlInstance=ave-asistencia-vehicular:us-central1:traccardb&amp;socketFactory=com.google.cloud.sql.mysql.SocketFactory&amp;serverTimezone=UTC</entry>
     <entry key='database.user'>traccar_user</entry>
     <entry key='database.password'>${DB_PASSWORD}</entry> <entry key='database.checkVersion'>true</entry>
     <entry key='database.changelog'>./schema/changelog-master.xml</entry>
-</server>
+
+    </properties>
